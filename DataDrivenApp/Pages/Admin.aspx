@@ -21,6 +21,7 @@
                 <h3>Employee Search Form</h3>
             </div>
             <div class="panel-body">
+                
                 <div class="form-group">
                     <label for="inputFirstname" class="control-label col-xs-2">
                         Firstname
@@ -42,24 +43,55 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="inputGender" class="control-label col-xs-2">
-                        Gender
+                    <label for="inputPostcode" class="control-label col-xs-2">
+                        Postcode
                     </label>
                     <div class="col-xs-10">
                         <input type="text" runat="server" class="form-control"
-                            id="inputGender" placeholder="Gender" />
+                            id="inputPostcode" placeholder="Postcode" />
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="inputSalary" class="control-label col-xs-2">
-                        Salary
+                    <label for="inputSuburb" class="control-label col-xs-2">
+                        Suburb
+                    </label>
+                    <div class="col-xs-10">
+                        <input type="text" runat="server" class="form-control"
+                            id="inputSuburb" placeholder="Suburb" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputEmailAddress" class="control-label col-xs-2">
+                        Email Address
+                    </label>
+                    <div class="col-xs-10">
+                        <input type="text" runat="server" class="form-control"
+                            id="inputEmailAddress" placeholder="Email Address" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputAgeMin" class="control-label col-xs-2">
+                        Age (Min)
                     </label>
                     <div class="col-xs-10">
                         <input type="number" runat="server" class="form-control"
-                            id="inputSalary" placeholder="Salary" />
+                            id="inputAgeMin" placeholder="Age Min" />
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="inputAgeMax" class="control-label col-xs-2">
+                        Age (Max)
+                    </label>
+                    <div class="col-xs-10">
+                        <input type="number" runat="server" class="form-control"
+                            id="inputAgeMax" placeholder="Age Max" />
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <div class="col-xs-10 col-xs-offset-2">
                         <asp:Button ID="btnSearch" runat="server" Text="Search"
@@ -78,6 +110,9 @@
                     <asp:GridView CssClass="table table-bordered"
                         ID="gvSearchResults" runat="server">
                     </asp:GridView>
+                    </div>
+                </div>
+            </div>
     </form>
 </body>
 </html>

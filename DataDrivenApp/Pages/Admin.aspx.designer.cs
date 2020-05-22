@@ -69,22 +69,49 @@ namespace DataDrivenApp.Pages
         protected global::System.Web.UI.HtmlControls.HtmlInputText inputLastname;
 
         /// <summary>
-        /// inputGender control.
+        /// inputPostcode control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText inputGender;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText inputPostcode;
 
         /// <summary>
-        /// inputSalary control.
+        /// inputSuburb control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputGenericControl inputSalary;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText inputSuburb;
+
+        /// <summary>
+        /// inputEmailAddress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputText inputEmailAddress;
+
+        /// <summary>
+        /// inputAgeMin control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputGenericControl inputAgeMin;
+
+        /// <summary>
+        /// inputAgeMax control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputGenericControl inputAgeMax;
 
         /// <summary>
         /// btnSearch control.

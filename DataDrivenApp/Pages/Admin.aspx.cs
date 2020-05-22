@@ -89,17 +89,17 @@ namespace DataDrivenApp.Pages
                     command.Parameters.Add(param);
                 }
 
-                if (inputGender.Value.Trim() != "")
+                if (inputPostcode.Value.Trim() != "")
                 {
-                    sbCommand.Append(" AND Gender=@Gender");
-                    SqlParameter param = new SqlParameter("@Gender", inputGender.Value);
+                    sbCommand.Append(" AND answerText=@Postcode");
+                    SqlParameter param = new SqlParameter("@Postcode", inputPostcode.Value);
                     command.Parameters.Add(param);
                 }
 
-                if (inputSalary.Value.Trim() != "")
+                if (inputSuburb.Value.Trim() != "")
                 {
-                    sbCommand.Append(" AND Salary=@Salary");
-                    SqlParameter param = new SqlParameter("@Salary", inputSalary.Value);
+                    sbCommand.Append(" AND answerText=@Suburb");
+                    SqlParameter param = new SqlParameter("@Suburb", inputSuburb.Value);
                     command.Parameters.Add(param);
                 }
 
