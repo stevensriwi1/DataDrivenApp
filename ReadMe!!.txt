@@ -1,4 +1,4 @@
 Admin Login Credential:
 
-Username: Admin
-Password: Admin123
+Username: admin
+Password: admin

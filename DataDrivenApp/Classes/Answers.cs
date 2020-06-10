@@ -10,7 +10,6 @@ namespace DataDrivenApp
         public int answerId { get; set; }
         public int? optionId { get; set; }
         public string answerText { get; set; }
-        public int userId { get; set; }
         
     }
 }

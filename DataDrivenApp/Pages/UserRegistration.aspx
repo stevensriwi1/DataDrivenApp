@@ -75,7 +75,7 @@
                     </div>
 
                     <div class="container-login100-form-btn">
-                        <asp:Button ID="Button2" class="login100-form-btn" runat="server" Text="Login" Style="float: right;" OnClick="submitBtn_Click" />
+                        <asp:Button ID="Button2" class="login100-form-btn" runat="server" Text="Submit" Style="float: right;" OnClick="submitBtn_Click" />
                     </div>
                     <div class="text-center p-t-12">
                         <asp:Label ID="message" class="txt2" runat="server"></asp:Label>

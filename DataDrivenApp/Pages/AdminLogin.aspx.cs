@@ -1,6 +1,7 @@
 ﻿using DataDrivenApp.Sessions;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -17,16 +18,31 @@ namespace DataDrivenApp
 
         protected void submitBtn_Click(object sender, EventArgs e)
         {
-            
-            if (usernameTxtbox.Text.Equals("Admin") && passwordTxtbox.Text.Equals("Admin123"))
+            using (SqlConnection connection = DBUtility.ConnectToSQLDB())
             {
-                AdminAppSession.setUsername(usernameTxtbox.Text);
-                Response.Redirect("Admin.aspx");
+                SqlCommand command = new SqlCommand("SELECT * FROM Admin", connection);
+
+                //RUN command and dump results into reader
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    //Gets username from table
+                    string username = reader["username"].ToString();
+                    //Gets password from table
+                    string password = reader["password"].ToString();
+                    if (usernameTxtbox.Text.Equals(username) && passwordTxtbox.Text.Equals(password))
+                    {
+                        AdminAppSession.setUsername(usernameTxtbox.Text);
+                        Response.Redirect("Admin.aspx");
+                    }
+                    else
+                    {
+                        message.Text = "Invalid User";
+                    }
+                }
+                
             }
-            else
-            {
-               message.Text = "Invalid User";
-            }
+                
         }
     }
 }

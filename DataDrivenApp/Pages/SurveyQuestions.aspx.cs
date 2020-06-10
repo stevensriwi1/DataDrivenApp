@@ -18,14 +18,19 @@ namespace DataDrivenApp.Pages
         public const string SESSION_EXTRA_QUESTION = "extraQuestions";
         public string ipAddress;
         public const string QUESTION_ID = "questionID";
+        public const string EXTRA_QUESTION_AND_SKIP_BUTTON = "extraQuestionAndSkipButton";
 
         public static string SESSION_ANSWER_TEXTBOX;
-        public static int SESSION_ANSWER_CHECKBOX;
+        public static string SESSION_ANSWER_CHECKBOX;
         public static string SESSION_ANSWER_RADIOBUTTON;
+        List<int> extraQuestionAndSkipButton = new List<int>();
 
         public int currentUserId;
         protected void Page_Load(object sender, EventArgs e)
         {
+            
+            skipBtn.Style["visibility"] = "hidden";
+            Console.WriteLine(HttpContext.Current.Session[EXTRA_QUESTION_AND_SKIP_BUTTON]);
             try
             {
                 currentUserId = (int)HttpContext.Current.Session["currentUserId"];
@@ -90,6 +95,19 @@ namespace DataDrivenApp.Pages
 
                         QuestionPlaceHolder.Controls.Add(checkBoxList);
                         HttpContext.Current.Session["currentUserId"] = currentUserId;
+
+                        if(HttpContext.Current.Session[EXTRA_QUESTION_AND_SKIP_BUTTON] != null)
+                        {
+                            //show when there is extra question
+                            skipBtn.Style["visibility"] = "show";
+                            HttpContext.Current.Session[EXTRA_QUESTION_AND_SKIP_BUTTON] = null;
+                        }
+                        else
+                        {
+                            //make it hidden when there is no extra question
+                            skipBtn.Style["visibility"] = "hidden";
+                        }
+                        
                     }
                     else if (questionType == "radiobutton")
                     {
@@ -173,6 +191,8 @@ namespace DataDrivenApp.Pages
             //get extra questions list from session if it exist, if not make a new one
             List<int> extraQuestions = new List<int>();
 
+            
+
 
             if (HttpContext.Current.Session[SESSION_EXTRA_QUESTION] != null)
             {
@@ -200,7 +220,6 @@ namespace DataDrivenApp.Pages
                             Answers answer = new Answers();
                             answer.optionId = null;
                             answer.answerText = typedAnswer;
-                            answer.userId = currentUserId;
                             ///get list from session
                             List<Answers> answers = GetListOfAnswersFromSession();
                             answers.Add(answer);
@@ -238,11 +257,9 @@ namespace DataDrivenApp.Pages
                                 {
                                     Answers answer = new Answers();
                                     int optionId = int.Parse(item.Value);// may throw exception.
-                                                                         //HttpContext.Current.Session[SESSION_ANSWER_CHECKBOX] = optionId; 
 
                                     listOptionId.Add(optionId);
 
-                                    //PLEASE UNCOMMENT
                                     SqlCommand optionsCommand = new SqlCommand("SELECT nextQuestionId FROM Options WHERE optionId = " + optionId, connection);
                                     //RUN command and execute straight away , execute scalar gives back the first row and first value in the first column
                                     var dbResult = optionsCommand.ExecuteScalar();
@@ -251,23 +268,19 @@ namespace DataDrivenApp.Pages
                                     if (dbResult.ToString() != "")
                                     {
                                         extraQuestions.Add((int)dbResult);
+                                        extraQuestionAndSkipButton.Add((int)dbResult);
                                     }
 
-                                    //TODO FOR STEVEN
                                     //get hold of optionId, the answerText and userID and add to session
                                     try
                                     {
-
                                         answer.optionId = optionId;
                                         answer.answerText = item.ToString();
-                                        answer.userId = currentUserId;
                                         ///get list from session
                                         List<Answers> answers = GetListOfAnswersFromSession();
                                         answers.Add(answer);
                                         //save this list into the session (overwrite existing list if any)
                                         HttpContext.Current.Session["answers"] = answers;
-
-
                                     }
                                     catch (ArgumentException argEx)
                                     {
@@ -324,7 +337,6 @@ namespace DataDrivenApp.Pages
                                 Answers answer = new Answers();
                                 answer.optionId = optionId;
                                 answer.answerText = selectedAnswer;
-                                answer.userId = currentUserId;
                                 ///get list from session
                                 List<Answers> answers = GetListOfAnswersFromSession();
                                 answers.Add(answer);
@@ -370,6 +382,41 @@ namespace DataDrivenApp.Pages
                             //check if value in this row and column is NULL
                             if (reader.IsDBNull(nextQuestionColumnIndex))
                             {
+                                //insert User details and get userId
+                                Users users = (Users)HttpContext.Current.Session["currentUser"];
+                                
+                                SqlCommand commandInsertUsers = new SqlCommand("INSERT INTO Users (firstName, lastName, dob, phoneNumber, date, anonymous, ipAddress) VALUES (@firstName, @lastName, @dob, @phoneNumber, @date, @anonymous, @ipAddress); SELECT CAST(scope_identity() as int);", connection);
+                                //add parameter
+                                //prevents sql injection
+                                commandInsertUsers.Parameters.Add("@firstName", SqlDbType.VarChar, 50);
+                                commandInsertUsers.Parameters["@firstName"].Value = users.firstName;
+
+                                commandInsertUsers.Parameters.Add("@lastName", SqlDbType.VarChar, 50);
+                                commandInsertUsers.Parameters["@lastName"].Value = users.lastName;
+
+                                commandInsertUsers.Parameters.Add("@dob", SqlDbType.VarChar, 50);
+                                commandInsertUsers.Parameters["@dob"].Value = users.dob;
+
+                                commandInsertUsers.Parameters.Add("@phoneNumber", SqlDbType.VarChar, 50);
+                                commandInsertUsers.Parameters["@phoneNumber"].Value = users.phoneNumber;
+
+                                commandInsertUsers.Parameters.Add("@anonymous", SqlDbType.Int, 4);
+                                commandInsertUsers.Parameters["@anonymous"].Value = users.anon;
+
+                                commandInsertUsers.Parameters.Add("@date", SqlDbType.VarChar, 50);
+                                commandInsertUsers.Parameters["@date"].Value = users.date;
+
+                                commandInsertUsers.Parameters.Add("@ipAddress", SqlDbType.VarChar, 50);
+                                commandInsertUsers.Parameters["@ipAddress"].Value = users.ipAddress;
+
+                                //get the userId from database
+                                int newUserId = (int)commandInsertUsers.ExecuteScalar();
+
+                                Console.WriteLine("New Product Id: " + newUserId);
+
+
+
+                                //Insert Answers
                                 List<Answers> answers = GetListOfAnswersFromSession();
 
                                 foreach (Answers answer in answers)
@@ -388,7 +435,7 @@ namespace DataDrivenApp.Pages
                                     commandInsert.Parameters["@answerText"].Value = answer.answerText;
 
                                     commandInsert.Parameters.Add("@userId", SqlDbType.Int, 4);
-                                    commandInsert.Parameters["@userId"].Value = answer.userId;
+                                    commandInsert.Parameters["@userId"].Value = newUserId;
 
 
                                     var rowsAffected = commandInsert.ExecuteNonQuery();
@@ -403,7 +450,8 @@ namespace DataDrivenApp.Pages
 
                                 //empty products out of session
                                 HttpContext.Current.Session["answers"] = null;
-
+                                //clear all session
+                                Session.Clear();
 
                                 //if null, at end of survey 
                                 Response.Redirect("ThankYouPage.aspx");
@@ -426,6 +474,8 @@ namespace DataDrivenApp.Pages
                         //if we do have questions on that list
                         //set current question to load to be equal to first question in the extraQuestions List
                         HttpContext.Current.Session[QUESTION_ID] = extraQuestions[0];
+                        //add to skip button session
+                        HttpContext.Current.Session[EXTRA_QUESTION_AND_SKIP_BUTTON] = extraQuestions[0];
                         //remove this question from the list 
                         extraQuestions.RemoveAt(0);
                         //save extraQuestionlist into session
@@ -465,30 +515,146 @@ namespace DataDrivenApp.Pages
             }
         }
 
+        protected void skipBtn_Click(object sender, EventArgs e)
+        {
+            int currentQuestionID = getCurrentQuestionIDFromSession();
 
-        //protected void SubmitBtn_Click(object sender, EventArgs e)
-        //{
-        //    SelectedBulletedList.Items.Clear();
-        //    //loop through items
-        //    foreach(ListItem item in QuestionCheckBoxList.Items)
-        //    {
-        //        //if selected
-        //        if(item.Selected)
-        //        {
 
-        //            //TODO save answer to session(later save to database)
-        //            SelectedBulletedList.Items.Add(item.Text);
-        //        }
-        //    }
-        //}
+            //get extra questions list from session if it exist, if not make a new one
+            List<int> extraQuestions = new List<int>();
+            if (HttpContext.Current.Session[SESSION_EXTRA_QUESTION] != null)
+            {
+                extraQuestions = (List<int>)HttpContext.Current.Session[SESSION_EXTRA_QUESTION];
+            }
 
-        //protected void NextButton_Click(object sender, EventArgs e)
-        //{
-        //    AppSession.incrementQuestionNumber();
+            try
+            {
 
-        //    List<string> names = (List<string>)HttpContext.Current.Session["names"];
+                using (SqlConnection connection = DBUtility.ConnectToSQLDB())
+                {
+                    
 
-        //    currentQuestionLabel.Text = "Question " + AppSession.getQuestionNumber();
-        //}
+                    if (extraQuestions.Count <= 0)
+                    {
+                        SqlCommand command = new SqlCommand("SELECT * FROM Questions WHERE questionId = " + currentQuestionID, connection);
+
+                        //RUN command and dump results into reader
+                        SqlDataReader reader = command.ExecuteReader();
+
+                        if (reader.Read())
+                        {
+                            //get index for the nextQuestion column
+                            int nextQuestionColumnIndex = reader.GetOrdinal("nextQuestion");
+                            //check if value in this row and column is NULL
+                            if (reader.IsDBNull(nextQuestionColumnIndex))
+                            {
+                                List<Answers> answers = GetListOfAnswersFromSession();
+
+                                foreach (Answers answer in answers)
+                                {
+                                    //insert User details and get userId
+                                    Users users = (Users)HttpContext.Current.Session["currentUserId"];
+
+                                    SqlCommand commandInsertUsers = new SqlCommand("INSERT INTO Users (firstName, lastName, dob, phoneNumber, date, anonymous, ipAddress) VALUES (@firstName, @lastName, @dob, @phoneNumber, @date, @anonymous, @ipAddress); SELECT CAST(scope_identity() as int);", connection);
+                                    //add parameter
+                                    //prevents sql injection
+                                    commandInsertUsers.Parameters.Add("@firstName", SqlDbType.VarChar, 50);
+                                    commandInsertUsers.Parameters["@firstName"].Value = users.firstName;
+
+                                    commandInsertUsers.Parameters.Add("@lastName", SqlDbType.VarChar, 50);
+                                    commandInsertUsers.Parameters["@lastName"].Value = users.lastName;
+
+                                    commandInsertUsers.Parameters.Add("@dob", SqlDbType.VarChar, 50);
+                                    commandInsertUsers.Parameters["@dob"].Value = users.dob;
+
+                                    commandInsertUsers.Parameters.Add("@phoneNumber", SqlDbType.VarChar, 50);
+                                    commandInsertUsers.Parameters["@phoneNumber"].Value = users.phoneNumber;
+
+                                    commandInsertUsers.Parameters.Add("@anonymous", SqlDbType.Int, 4);
+                                    commandInsertUsers.Parameters["@anonymous"].Value = users.anon;
+
+                                    commandInsertUsers.Parameters.Add("@date", SqlDbType.VarChar, 50);
+                                    commandInsertUsers.Parameters["@date"].Value = users.date;
+
+                                    commandInsertUsers.Parameters.Add("@ipAddress", SqlDbType.VarChar, 50);
+                                    commandInsertUsers.Parameters["@ipAddress"].Value = users.ipAddress;
+
+                                    //get the userId from database
+                                    int newUserId = (int)commandInsertUsers.ExecuteScalar();
+
+                                    Console.WriteLine("New Product Id: " + newUserId);
+
+                                    SqlCommand commandInsert = new SqlCommand("INSERT INTO Answers (optionId, answerText, userId) VALUES (@optionId, @answerText, @userId);", connection);
+                                    //add parameter
+                                    //prevents sql injection
+                                    commandInsert.Parameters.Add("@optionId", SqlDbType.VarChar, 50);
+                                    commandInsert.Parameters["@optionId"].Value = answer.optionId;
+                                    if (commandInsert.Parameters["@optionId"].Value == null)
+                                    {
+                                        commandInsert.Parameters["@optionId"].Value = DBNull.Value;
+                                    }
+
+                                    commandInsert.Parameters.Add("@answerText", SqlDbType.VarChar, 50);
+                                    commandInsert.Parameters["@answerText"].Value = answer.answerText;
+
+                                    commandInsert.Parameters.Add("@userId", SqlDbType.Int, 4);
+                                    commandInsert.Parameters["@userId"].Value = newUserId;
+
+
+                                    var rowsAffected = commandInsert.ExecuteNonQuery();
+
+                                    if (rowsAffected <= 0)
+                                    {
+                                        //could not insert
+                                        //do something about it like show to user that the stuff didnt insert properly
+                                        Console.WriteLine("failed to write");
+                                    }
+                                }
+
+                                //empty products out of session
+                                HttpContext.Current.Session["answers"] = null;
+                                //clear all session
+                                Session.Clear();
+
+                                //if null, at end of survey 
+                                Response.Redirect("ThankYouPage.aspx");
+                            }
+                            else
+                            {
+                                //If not null, get the value of the nextQuestion column so we can load that question up next
+                                int nextQuestionId = (int)reader["nextQuestion"];
+                                //save this as the current questionId in session.
+                                HttpContext.Current.Session["questionID"] = nextQuestionId;
+                                HttpContext.Current.Session["currentUserId"] = currentUserId;
+                                //reload this page
+                                Response.Redirect("SurveyQuestions.aspx");
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //if we do have questions on that list
+                        //set current question to load to be equal to first question in the extraQuestions List
+                        HttpContext.Current.Session[QUESTION_ID] = extraQuestions[0];
+                        //add to skip button session
+                        HttpContext.Current.Session[EXTRA_QUESTION_AND_SKIP_BUTTON] = extraQuestions[0];
+                        //remove this question from the list 
+                        extraQuestions.RemoveAt(0);
+                        //save extraQuestionlist into session
+                        HttpContext.Current.Session[SESSION_EXTRA_QUESTION] = extraQuestions;
+                        HttpContext.Current.Session["currentUserId"] = currentUserId;
+
+
+                        //reload this page
+                        Response.Redirect("SurveyQuestions.aspx");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
     }
 }

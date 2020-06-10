@@ -40,6 +40,8 @@
         </div> 
         <br />
         <asp:BulletedList ID="productBulletedList" runat="server"></asp:BulletedList>
+
+        <asp:Button ID="skipBtn" runat="server" Text="Skip" OnClick="skipBtn_Click" />
            
     </form>
 </body>
